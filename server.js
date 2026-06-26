@@ -17,18 +17,21 @@ app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error('DATABASE_URL is required');
+const const url = process.env.DATABASE_URL;
+
+if (!url) {
+  throw new Error('DATABASE_URL is required');
+}
+
 const pool = mysql.createPool({
   uri: url,
   waitForConnections: true,
   connectionLimit: 10,
+  queueLimit: 0,
   ssl: {
-    minVersion: 'TLSv1.2',
     rejectUnauthorized: false
   }
 });
-
 // ---------- Migration ----------
 async function migrate() {
   await pool.execute(`CREATE TABLE IF NOT EXISTS users (
