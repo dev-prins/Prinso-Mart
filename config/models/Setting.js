@@ -1,18 +1,39 @@
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler');
+const User = require('../models/User');
 
-const settingSchema = new mongoose.Schema({
-  key: { type: String, required: true, unique: true },
-  value: { type: mongoose.Schema.Types.Mixed, required: true }, // Can store various types of settings
-  description: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
+const protect = asyncHandler(async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      req.user = await User.findById(decoded.id).select('-password');
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(401);
+      throw new Error('Not authorized, token failed');
+    }
+  }
+
+  if (!token) {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
 });
 
-// Update `updatedAt` field on save
-settingSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403);
+      throw new Error('Not authorized to access this route');
+    }
+    next();
+  };
+};
 
-const Setting = mongoose.model('Setting', settingSchema);
-module.exports = Setting;
+module.exports = { protect, authorizeRoles };
