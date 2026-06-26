@@ -19,7 +19,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error('DATABASE_URL is required');
-const pool = mysql.createPool(url);
+const pool = mysql.createPool({
+  uri: url,
+  waitForConnections: true,
+  connectionLimit: 10,
+  ssl: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: false
+  }
+});
 
 // ---------- Migration ----------
 async function migrate() {
