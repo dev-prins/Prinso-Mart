@@ -2,10 +2,10 @@
   "name": "prinsomart-backend",
   "version": "1.0.0",
   "description": "PrinsoMart Backend with MongoDB Atlas",
-  "main": "app.js",
+  "main": "server.js", // <-- Change this from app.js to server.js
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node server.js", // <-- Change this from node app.js to node server.js
+    "dev": "nodemon server.js", // <-- Change this from nodemon app.js to nodemon server.js
     "seed": "node utils/seeder.js"
   },
   "dependencies": {
@@ -20,4 +20,4 @@
   "devDependencies": {
     "nodemon": "^3.1.3"
   }
-}
+  }
