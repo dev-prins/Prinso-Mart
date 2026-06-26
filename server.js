@@ -2,7 +2,7 @@
 // Pure Veg Grocery Delivery Platform - Umaria, MP
 
 const express = require('express');
-const mysql = require('mysql2/promise');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
