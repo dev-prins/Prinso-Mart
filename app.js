@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/routes/productRoutes');
+const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userRoutes = require('./routes/userRoutes'); // For admin managing users
