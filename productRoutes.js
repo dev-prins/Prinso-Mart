@@ -1,8 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('./config/models/Product');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const streamifier = require('streamifier');
 
-// SEED route - browser se products add karne ke liye
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Multer memory storage
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Upload helper function
+const uploadToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'sonimart-products' },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
+
+// SEED route
 router.get('/seed', async (req, res) => {
   try {
     await Product.deleteMany();
@@ -26,6 +53,7 @@ router.get('/seed', async (req, res) => {
   }
 });
 
+// GET all products
 router.get('/', async (req, res) => {
   try {
     const { category, search, sort } = req.query;
@@ -42,6 +70,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET single product
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -52,18 +81,30 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+// POST - new product with image
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    let imageUrl = '';
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      imageUrl = result.secure_url;
+    }
+    const product = await Product.create({ ...req.body, image: imageUrl });
     res.status(201).json(product);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.put('/:id', async (req, res) => {
+// PUT - update product with image
+router.put('/:id', upload.single('image'), async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    let updateData = { ...req.body };
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      updateData.image = result.secure_url;
+    }
+    const product = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!product) return res.status(404).json({ message: 'Product not found' });
     res.json(product);
   } catch (err) {
@@ -71,6 +112,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// DELETE product
 router.delete('/:id', async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
