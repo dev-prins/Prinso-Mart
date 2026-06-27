@@ -1,41 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const ServiceArea = require('./config/models/ServiceArea');
+const mongoose = require('mongoose');
 
-router.get('/', async (req, res) => {
-  try {
-    const areas = await ServiceArea.find({ isActive: true });
-    res.json(areas);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+const serviceAreaSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  pincode: { type: String, required: true },
+  city: { type: String, required: true },
+  deliveryCharge: { type: Number, default: 0 },
+  minOrderAmount: { type: Number, default: 199 },
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
-router.post('/', async (req, res) => {
-  try {
-    const area = await ServiceArea.create(req.body);
-    res.status(201).json(area);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-router.put('/:id', async (req, res) => {
-  try {
-    const area = await ServiceArea.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(area);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await ServiceArea.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Area deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-module.exports = router;
+module.exports = mongoose.model('ServiceArea', serviceAreaSchema);
