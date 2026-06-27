@@ -21,14 +21,13 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./productRoutes');
-const categoryRoutes = require('./categoryRoutes');
-const orderRoutes = require('./orderRoutes');
-const userRoutes = require('./userRoutes');
-const addressRoutes = require('./addressRoutes');
-const serviceAreaRoutes = require('./serviceAreaRoutes');
-const settingRoutes = require('./settingRoutes');
+const productRoutes = require('./routes/productRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const userRoutes = require('./routes/userRoutes');
+const addressRoutes = require('./routes/addressRoutes');
+const serviceAreaRoutes = require('./routes/serviceAreaRoutes');
+const settingRoutes = require('./routes/settingRoutes');
 
 
 // Define API routes
