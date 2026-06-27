@@ -3,13 +3,647 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PrinsoMart Admin</title>
-<link rel="stylesheet" href="/css/style.css">
-<style>body{background:#f4f6f8}.app{max-width:none}</style>
+<title>Soni Mart Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6f8;color:#1a1a1a}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#1b5e20;color:white;display:flex;flex-direction:column;z-index:200;transition:transform 0.3s}
+.sidebar-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sidebar-logo h1{font-size:18px;font-weight:800}
+.sidebar-logo p{font-size:11px;opacity:0.6;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;opacity:0.75;transition:all 0.2s;border-left:3px solid transparent}
+.nav-item:hover{opacity:1;background:rgba(255,255,255,0.08)}
+.nav-item.active{opacity:1;background:rgba(255,255,255,0.12);border-left-color:#a5d6a7}
+.nav-icon{font-size:18px;width:24px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:16px;font-size:12px;opacity:0.4}
+
+/* ── Mobile Header ── */
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;background:#1b5e20;color:white;padding:14px 16px;z-index:300;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.mobile-header h1{font-size:16px;font-weight:700;flex:1}
+.menu-btn{background:none;border:none;color:white;font-size:22px;cursor:pointer;padding:2px 6px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150}
+.overlay.show{display:block}
+
+/* ── Main Content ── */
+.main{margin-left:220px;padding:24px;min-height:100vh}
+
+/* ── Page ── */
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:22px;font-weight:800;margin-bottom:20px;color:#1b5e20}
+
+/* ── Stats Grid ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:white;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.stat-card .label{font-size:12px;color:#888;margin-bottom:6px}
+.stat-card .value{font-size:28px;font-weight:800;color:#1b5e20}
+.stat-card .sub{font-size:12px;color:#aaa;margin-top:4px}
+.stat-card .icon{font-size:28px;float:right;margin-top:-30px}
+
+/* ── Cards ── */
+.card{background:white;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);margin-bottom:16px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;color:#333}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f9f9f9;padding:10px 12px;text-align:left;font-weight:600;color:#555;border-bottom:2px solid #eee}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:hover td{background:#fafafa}
+
+/* ── Badge ── */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:#2e7d32;color:white}
+.btn-primary:hover{background:#1b5e20}
+.btn-danger{background:#ffebee;color:#c62828}
+.btn-danger:hover{background:#ffcdd2}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* ── Form ── */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;transition:border 0.2s}
+.form-group input:focus,.form-group select:focus{border-color:#2e7d32}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Toggle Switch ── */
+.switch{position:relative;width:48px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#ddd;border-radius:26px;cursor:pointer;transition:background 0.25s}
+.slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+input:checked+.slider{background:#2e7d32}
+input:checked+.slider::before{transform:translateX(22px)}
+
+/* ── Toggle Rows ── */
+.toggle-section{background:white;border-radius:14px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.toggle-section-header{padding:13px 16px;background:#e8f5e9;display:flex;align-items:center;gap:8px;cursor:pointer;border-bottom:1px solid #c8e6c9}
+.toggle-section-header h3{font-size:14px;font-weight:700;color:#1b5e20;flex:1}
+.chevron{font-size:11px;color:#2e7d32;transition:transform 0.2s}
+.collapsed .chevron{transform:rotate(-90deg)}
+.toggle-body{padding:4px 0}
+.toggle-body.hidden{display:none}
+.toggle-row{display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid #f5f5f5}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row:hover{background:#fafafa}
+.t-icon{font-size:18px;width:26px;text-align:center;flex-shrink:0}
+.t-info{flex:1;min-width:0}
+.t-info strong{display:block;font-size:13px;color:#1a1a1a}
+.t-info small{color:#999;font-size:11px}
+
+/* ── App Control Cards ── */
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.ctrl-card{background:white;border:2px solid #e8f5e9;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.ctrl-card.danger{border-color:#ffcdd2}
+.ctrl-icon{font-size:28px}
+.ctrl-info{flex:1}
+.ctrl-info strong{display:block;font-size:13px;font-weight:700}
+.ctrl-info small{font-size:11px;color:#888}
+
+/* ── Save Bar ── */
+.save-bar{position:sticky;top:0;background:white;border-bottom:1px solid #eee;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin:-24px -24px 20px;z-index:50}
+.save-bar p{font-size:13px;color:#666}
+
+/* ── Modal ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.modal{background:white;border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:16px 20px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
+.modal-header h2{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid #eee;display:flex;gap:10px;justify-content:flex-end}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2e7d32;color:white;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:600;opacity:0;transition:opacity 0.3s;z-index:999;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+#toast.error{background:#c62828}
+
+/* ── Loading ── */
+.loading-row td{text-align:center;color:#aaa;padding:30px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-header{display:flex}
+  .main{margin-left:0;padding:16px;padding-top:64px}
+  .save-bar{margin:-16px -16px 16px;top:56px}
+  .form-row{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+</style>
 </head>
 <body>
-<div id="app"></div>
-<div class="toast" id="toast"></div>
-<script src="/js/admin.js"></script>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Mobile Header -->
+<div class="mobile-header">
+  <button class="menu-btn" onclick="openSidebar()">☰</button>
+  <h1>🛒 Soni Mart Admin</h1>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>🛒 Soni Mart</h1>
+    <p>Admin Panel</p>
+  </div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)">
+    <span class="nav-icon">📊</span> Dashboard
+  </div>
+  <div class="nav-item" onclick="showPage('products',this)">
+    <span class="nav-icon">🥦</span> Products
+  </div>
+  <div class="nav-item" onclick="showPage('orders',this)">
+    <span class="nav-icon">📦</span> Orders
+  </div>
+  <div class="nav-item" onclick="showPage('features',this)">
+    <span class="nav-icon">🎛️</span> Feature Controls
+  </div>
+  <div class="sidebar-footer">Soni Mart v1.0</div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">📊 Dashboard</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Today Orders</div>
+        <div class="value" id="stat-orders">—</div>
+        <div class="sub">Total orders</div>
+        <div class="icon">📦</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Revenue</div>
+        <div class="value" id="stat-revenue">—</div>
+        <div class="sub">Today</div>
+        <div class="icon">💰</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Products</div>
+        <div class="value" id="stat-products">—</div>
+        <div class="sub">In stock</div>
+        <div class="icon">🥦</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pending</div>
+        <div class="value" id="stat-pending">—</div>
+        <div class="sub">Need action</div>
+        <div class="icon">⏳</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Orders</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="recent-orders"><tr class="loading-row"><td colspan="4">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PRODUCTS ══ -->
+  <div class="page" id="page-products">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="page-title" style="margin:0">🥦 Products</div>
+      <button class="btn btn-primary" onclick="openAddProduct()">+ Add Product</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+          <tbody id="products-table"><tr class="loading-row"><td colspan="5">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ORDERS ══ -->
+  <div class="page" id="page-orders">
+    <div class="page-title">📦 Orders</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="filterOrders('all')">All</button>
+      <button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32" onclick="filterOrders('pending')">Pending</button>
+      <button class="btn btn-sm" style="background:#fff3e0;color:#e65100" onclick="filterOrders('confirmed')">Confirmed</button>
+      <button class="btn btn-sm" style="background:#e3f2fd;color:#1565c0" onclick="filterOrders('delivered')">Delivered</button>
+      <button class="btn btn-sm" style="background:#ffebee;color:#c62828" onclick="filterOrders('cancelled')">Cancelled</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="orders-table"><tr class="loading-row"><td colspan="7">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FEATURE CONTROLS ══ -->
+  <div class="page" id="page-features">
+    <div class="save-bar">
+      <p>⚡ Toggle karo aur Save dabao</p>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveSettings()">💾 Save Changes</button>
+    </div>
+    <div class="page-title">🎛️ Feature Controls</div>
+
+    <!-- App Control -->
+    <div class="ctrl-grid">
+      <div class="ctrl-card danger">
+        <span class="ctrl-icon">🔴</span>
+        <div class="ctrl-info"><strong>Maintenance Mode</strong><small>App band kar do</small></div>
+        <label class="switch"><input type="checkbox" data-key="maintenanceMode" onchange="markDirty()"><span class="slider"></span></label>
+      </div>
+      <div class="ctrl-card">
+        <span class="ctrl-icon">🚚</span>
+        <div class="ctrl-info"><strong>Delivery System</strong><small>Poori delivery on/off</small></div>
+        <label class="switch"><input type="checkbox" data-key="deliveryEnabled" onchange="markDirty()"><span class="slider"></span></label>
+      </div>
+      <div class="ctrl-card">
+        <span class="ctrl-icon">💳</span>
+        <div class="ctrl-info"><strong>Payment System</strong><small>Sare payments on/off</small></div>
+        <label class="switch"><input type="checkbox" data-key="paymentsEnabled" onchange="markDirty()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <!-- Home -->
+    <div class="toggle-section">
+      <div class="toggle-section-header" onclick="toggleSec(this)">
+        <span>🏠</span><h3>Home Features</h3><span class="chevron">▼</span>
+      </div>
+      <div class="toggle-body">
+        <div class="toggle-row"><span class="t-icon">🖼️</span><div class="t-info"><strong>Banner Slider</strong><small>Top sliding banners</small></div><label class="switch"><input type="checkbox" data-key="bannerSlider" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🔥</span><div class="t-info"><strong>Deal of the Day</strong><small>Daily discount section</small></div><label class="switch"><input type="checkbox" data-key="dealOfDay" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">📍</span><div class="t-info"><strong>Nearby Products</strong><small>Location-based products</small></div><label class="switch"><input type="checkbox" data-key="nearbyProducts" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">📂</span><div class="t-info"><strong>Category Section</strong><small>Vegetables, Fruits tabs</small></div><label class="switch"><input type="checkbox" data-key="categorySection" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🕐</span><div class="t-info"><strong>Recently Viewed</strong><small>Last dekhe products</small></div><label class="switch"><input type="checkbox" data-key="recentlyViewed" onchange="markDirty()"><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Product -->
+    <div class="toggle-section">
+      <div class="toggle-section-header" onclick="toggleSec(this)">
+        <span>🛍️</span><h3>Product Features</h3><span class="chevron">▼</span>
+      </div>
+      <div class="toggle-body">
+        <div class="toggle-row"><span class="t-icon">⭐</span><div class="t-info"><strong>Ratings & Reviews</strong><small>Customer reviews</small></div><label class="switch"><input type="checkbox" data-key="ratingsReviews" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🔍</span><div class="t-info"><strong>Product Zoom</strong><small>Image zoom on tap</small></div><label class="switch"><input type="checkbox" data-key="productZoom" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">📦</span><div class="t-info"><strong>Out of Stock Show</strong><small>OOS products dikhao</small></div><label class="switch"><input type="checkbox" data-key="outOfStockShow" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🔗</span><div class="t-info"><strong>Similar Products</strong><small>Yeh bhi dekho section</small></div><label class="switch"><input type="checkbox" data-key="similarProducts" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🥗</span><div class="t-info"><strong>Nutrition Info</strong><small>Protein, carbs info</small></div><label class="switch"><input type="checkbox" data-key="nutritionInfo" onchange="markDirty()"><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Cart -->
+    <div class="toggle-section">
+      <div class="toggle-section-header" onclick="toggleSec(this)">
+        <span>🛒</span><h3>Cart Features</h3><span class="chevron">▼</span>
+      </div>
+      <div class="toggle-body">
+        <div class="toggle-row"><span class="t-icon">🎟️</span><div class="t-info"><strong>Auto Coupon</strong><small>Best coupon auto-select</small></div><label class="switch"><input type="checkbox" data-key="autoCoupon" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">💡</span><div class="t-info"><strong>Smart Suggestion</strong><small>Add onion bhi? type</small></div><label class="switch"><input type="checkbox" data-key="smartSuggestion" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🗓️</span><div class="t-info"><strong>Schedule Delivery</strong><small>Future date delivery</small></div><label class="switch"><input type="checkbox" data-key="scheduleDelivery" onchange="markDirty()"><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Delivery -->
+    <div class="toggle-section">
+      <div class="toggle-section-header" onclick="toggleSec(this)">
+        <span>🚚</span><h3>Delivery Features</h3><span class="chevron">▼</span>
+      </div>
+      <div class="toggle-body">
+        <div class="toggle-row"><span class="t-icon">🗺️</span><div class="t-info"><strong>Live Tracking</strong><small>Real-time delivery map</small></div><label class="switch"><input type="checkbox" data-key="liveTracking" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🔐</span><div class="t-info"><strong>OTP Verification</strong><small>Delivery pe OTP</small></div><label class="switch"><input type="checkbox" data-key="otpDelivery" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">📞</span><div class="t-info"><strong>Delivery Contact</strong><small>Delivery boy call</small></div><label class="switch"><input type="checkbox" data-key="deliveryContact" onchange="markDirty()"><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="toggle-section">
+      <div class="toggle-section-header" onclick="toggleSec(this)">
+        <span>💳</span><h3>Payment Features</h3><span class="chevron">▼</span>
+      </div>
+      <div class="toggle-body">
+        <div class="toggle-row"><span class="t-icon">📱</span><div class="t-info"><strong>UPI Payment</strong><small>GPay, PhonePe, Paytm</small></div><label class="switch"><input type="checkbox" data-key="upiPayment" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">💵</span><div class="t-info"><strong>Cash on Delivery</strong><small>COD payment</small></div><label class="switch"><input type="checkbox" data-key="codPayment" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">👛</span><div class="t-info"><strong>Wallet System</strong><small>Soni Mart wallet</small></div><label class="switch"><input type="checkbox" data-key="walletSystem" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">↩️</span><div class="t-info"><strong>Refund System</strong><small>Auto refund on cancel</small></div><label class="switch"><input type="checkbox" data-key="refundSystem" onchange="markDirty()"><span class="slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="toggle-section">
+      <div class="toggle-section-header" onclick="toggleSec(this)">
+        <span>🔔</span><h3>Notifications</h3><span class="chevron">▼</span>
+      </div>
+      <div class="toggle-body">
+        <div class="toggle-row"><span class="t-icon">📲</span><div class="t-info"><strong>Push Notifications</strong><small>Browser alerts</small></div><label class="switch"><input type="checkbox" data-key="pushNotification" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">🎁</span><div class="t-info"><strong>Offer Messages</strong><small>Discount notifications</small></div><label class="switch"><input type="checkbox" data-key="offerMessages" onchange="markDirty()"><span class="slider"></span></label></div>
+        <div class="toggle-row"><span class="t-icon">📦</span><div class="t-info"><strong>Order Alerts</strong><small>Order status alerts</small></div><label class="switch"><input type="checkbox" data-key="orderAlerts" onchange="markDirty()"><span class="slider"></span></label></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Add/Edit Product Modal -->
+<div class="modal-bg" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Product</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="productId">
+      <div class="form-row">
+        <div class="form-group"><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Tomato"></div>
+        <div class="form-group"><label>Category</label>
+          <select id="pCategory">
+            <option>Vegetables</option><option>Fruits</option>
+            <option>Dairy</option><option>Grains</option><option>Snacks</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Price (₹)</label><input type="number" id="pPrice" placeholder="25"></div>
+        <div class="form-group"><label>Unit</label><input type="text" id="pUnit" placeholder="1 kg"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Stock</label><input type="number" id="pStock" placeholder="100"></div>
+        <div class="form-group"><label>Discount (%)</label><input type="number" id="pDiscount" placeholder="10"></div>
+      </div>
+      <div class="form-group"><label>Emoji Icon</label><input type="text" id="pEmoji" placeholder="🍅"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()" style="background:#f5f5f5">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+const API = 'https://prinso-mart.onrender.com/api';
+let allOrders = [];
+let isDirty = false;
+
+// ── Navigation ──────────────────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  closeSidebar();
+
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'products') loadProducts();
+  if (name === 'orders') loadOrders();
+  if (name === 'features') loadSettings();
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── Dashboard ───────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [ordRes, prodRes] = await Promise.all([
+      fetch(`${API}/orders`, { headers: authHeader() }),
+      fetch(`${API}/products`)
+    ]);
+    const ordData = await ordRes.json();
+    const prodData = await prodRes.json();
+
+    const orders = ordData.orders || ordData || [];
+    const products = prodData.products || prodData || [];
+
+    const today = new Date().toDateString();
+    const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === today);
+    const revenue = todayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const pending = orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length;
+
+    document.getElementById('stat-orders').textContent = orders.length;
+    document.getElementById('stat-revenue').textContent = '₹' + revenue;
+    document.getElementById('stat-products').textContent = products.length;
+    document.getElementById('stat-pending').textContent = pending;
+
+    const tbody = document.getElementById('recent-orders');
+    const recent = orders.slice(-5).reverse();
+    tbody.innerHTML = recent.length ? recent.map(o => `
+      <tr>
+        <td><strong>#${o.orderId || o._id?.slice(-6)}</strong></td>
+        <td>${(o.items || []).length} items</td>
+        <td>₹${o.totalAmount || 0}</td>
+        <td>${badgeHtml(o.status)}</td>
+      </tr>`).join('') : '<tr class="loading-row"><td colspan="4">No orders yet</td></tr>';
+  } catch (e) {
+    document.getElementById('recent-orders').innerHTML = '<tr class="loading-row"><td colspan="4">Load failed</td></tr>';
+  }
+}
+
+// ── Products ────────────────────────────────────────────────────────
+async function loadProducts() {
+  try {
+    const res = await fetch(`${API}/products`);
+    const data = await res.json();
+    const products = data.products || data || [];
+    const tbody = document.getElementById('products-table');
+    tbody.innerHTML = products.length ? products.map(p => `
+      <tr>
+        <td><span style="font-size:18px">${p.emoji||'📦'}</span> <strong>${p.name}</strong></td>
+        <td>${p.category || '—'}</td>
+        <td>₹${p.price}</td>
+        <td>${p.stock ?? '—'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editProduct(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p._id}')">Delete</button>
+        </td>
+      </tr>`).join('') : '<tr class="loading-row"><td colspan="5">No products</td></tr>';
+  } catch (e) {
+    document.getElementById('products-table').innerHTML = '<tr class="loading-row"><td colspan="5">Load failed</td></tr>';
+  }
+}
+
+function openAddProduct() {
+  document.getElementById('modalTitle').textContent = 'Add Product';
+  document.getElementById('productId').value = '';
+  ['pName','pPrice','pUnit','pStock','pDiscount','pEmoji'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('productModal').classList.add('show');
+}
+
+function editProduct(p) {
+  document.getElementById('modalTitle').textContent = 'Edit Product';
+  document.getElementById('productId').value = p._id;
+  document.getElementById('pName').value = p.name || '';
+  document.getElementById('pPrice').value = p.price || '';
+  document.getElementById('pUnit').value = p.unit || '';
+  document.getElementById('pStock').value = p.stock || '';
+  document.getElementById('pDiscount').value = p.discount || '';
+  document.getElementById('pEmoji').value = p.emoji || '';
+  document.getElementById('pCategory').value = p.category || 'Vegetables';
+  document.getElementById('productModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('productModal').classList.remove('show');
+}
+
+async function saveProduct() {
+  const id = document.getElementById('productId').value;
+  const body = {
+    name: document.getElementById('pName').value,
+    category: document.getElementById('pCategory').value,
+    price: +document.getElementById('pPrice').value,
+    unit: document.getElementById('pUnit').value,
+    stock: +document.getElementById('pStock').value,
+    discount: +document.getElementById('pDiscount').value,
+    emoji: document.getElementById('pEmoji').value,
+  };
+  try {
+    const url = id ? `${API}/products/${id}` : `${API}/products`;
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+    if (res.ok) { showToast('✅ Product saved!'); closeModal(); loadProducts(); }
+    else showToast('❌ Save failed', 'error');
+  } catch { showToast('❌ Network error', 'error'); }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  try {
+    await fetch(`${API}/products/${id}`, { method: 'DELETE', headers: authHeader() });
+    showToast('🗑️ Deleted!'); loadProducts();
+  } catch { showToast('❌ Failed', 'error'); }
+}
+
+// ── Orders ──────────────────────────────────────────────────────────
+async function loadOrders() {
+  try {
+    const res = await fetch(`${API}/orders`, { headers: authHeader() });
+    const data = await res.json();
+    allOrders = data.orders || data || [];
+    renderOrders(allOrders);
+  } catch {
+    document.getElementById('orders-table').innerHTML = '<tr class="loading-row"><td colspan="7">Load failed</td></tr>';
+  }
+}
+
+function renderOrders(orders) {
+  const tbody = document.getElementById('orders-table');
+  tbody.innerHTML = orders.length ? orders.slice().reverse().map(o => `
+    <tr>
+      <td><strong>#${o.orderId || o._id?.slice(-6)}</strong></td>
+      <td>${new Date(o.createdAt).toLocaleDateString('en-IN')}</td>
+      <td>${(o.items||[]).map(i=>i.name).join(', ').substring(0,30) || '—'}</td>
+      <td>₹${o.totalAmount||0}</td>
+      <td><span class="badge badge-blue">${o.paymentMethod||'COD'}</span></td>
+      <td>${badgeHtml(o.status)}</td>
+      <td>
+        <select onchange="updateOrderStatus('${o._id}',this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
+          ${['pending','confirmed','packed','on_way','delivered','cancelled'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+    </tr>`).join('') : '<tr class="loading-row"><td colspan="7">No orders</td></tr>';
+}
+
+function filterOrders(status) {
+  const filtered = status === 'all' ? allOrders : allOrders.filter(o => o.status === status);
+  renderOrders(filtered);
+}
+
+async function updateOrderStatus(id, status) {
+  try {
+    await fetch(`${API}/orders/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ status }) });
+    showToast('✅ Status updated!');
+    loadDashboard();
+  } catch { showToast('❌ Failed', 'error'); }
+}
+
+// ── Feature Settings ─────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const res = await fetch(`${API}/settings`);
+    const data = await res.json();
+    const s = data.settings || data;
+    document.querySelectorAll('[data-key]').forEach(input => {
+      const k = input.getAttribute('data-key');
+      if (k in s) input.checked = s[k];
+    });
+    isDirty = false;
+    document.getElementById('saveBtn').textContent = '💾 Save Changes';
+  } catch { showToast('❌ Settings load failed', 'error'); }
+}
+
+function markDirty() {
+  isDirty = true;
+  document.getElementById('saveBtn').textContent = '💾 Save *';
+}
+
+async function saveSettings() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const updates = {};
+  document.querySelectorAll('[data-key]').forEach(input => {
+    updates[input.getAttribute('data-key')] = input.checked;
+  });
+  try {
+    const res = await fetch(`${API}/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+    const data = await res.json();
+    if (data.success) { isDirty = false; showToast('✅ Settings saved!'); }
+    else showToast('❌ Save failed', 'error');
+  } catch { showToast('❌ Network error', 'error'); }
+  finally { btn.disabled = false; btn.textContent = '💾 Save Changes'; }
+}
+
+function toggleSec(header) {
+  header.classList.toggle('collapsed');
+  header.nextElementSibling.classList.toggle('hidden');
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────
+function authHeader() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function badgeHtml(status) {
+  const map = { pending:'badge-orange', confirmed:'badge-blue', packed:'badge-blue', on_way:'badge-blue', delivered:'badge-green', cancelled:'badge-red' };
+  return `<span class="badge ${map[status]||'badge-orange'}">${status||'pending'}</span>`;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type === 'error' ? 'error show' : 'show';
+  setTimeout(() => t.className = '', 3000);
+}
+
+window.addEventListener('beforeunload', e => { if (isDirty) { e.preventDefault(); e.returnValue = ''; } });
+
+// Init
+loadDashboard();
+</script>
 </body>
 </html>
