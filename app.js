@@ -1,58 +1,40 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
-const morgan = require('morgan');
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
-// Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
 connectDB();
 
 const app = express();
 
 // Middleware
-app.use(cors()); // Enable CORS for all origins (you might want to restrict this in production)
-app.use(express.json()); // Body parser for JSON
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev')); // Logger for development
-}
+app.use(cors({
+  origin: ['https://sonimart.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Import routes
+// Routes
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
 const orderRoutes = require('./routes/orderRoutes');
-const userRoutes = require('./routes/userRoutes'); // For admin managing users
-const addressRoutes = require('./routes/addressRoutes');
-const serviceAreaRoutes = require('./routes/serviceAreaRoutes');
 const settingRoutes = require('./routes/settingRoutes');
-
-
-// Define API routes
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
+const paymentRoutes = require('./routes/paymentRoutes');   // ← Razorpay Route
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/users', userRoutes); // Admin user management
-app.use('/api/addresses', addressRoutes);
-app.use('/api/serviceareas', serviceAreaRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/payment', paymentRoutes);   // ← Ye important hai
 
+// Health Check
+app.get('/', (req, res) => {
+  res.send('✅ Soni Mart Backend is Running!');
+});
 
-// Error handling middleware
-app.use(notFound);
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(
-  PORT,
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
-);
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
