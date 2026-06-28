@@ -29,42 +29,46 @@ const uploadToCloudinary = (buffer) => {
   });
 };
 
-// SEED route
+// SEED route (सिर्फ एक्टिव प्रोडक्ट्स के साथ)
 router.get('/seed', async (req, res) => {
   try {
     await Product.deleteMany();
     await Product.insertMany([
-      { name: 'Tomato', price: 25, originalPrice: 35, unit: '1 kg', category: 'vegetables', stock: 100, discount: 28 },
-      { name: 'Potato', price: 20, originalPrice: 25, unit: '1 kg', category: 'vegetables', stock: 100, discount: 20 },
-      { name: 'Onion', price: 22, originalPrice: 30, unit: '1 kg', category: 'vegetables', stock: 100, discount: 26 },
-      { name: 'Cucumber', price: 18, originalPrice: 25, unit: '1 kg', category: 'vegetables', stock: 100, discount: 28 },
-      { name: 'Capsicum', price: 30, originalPrice: 40, unit: '500 g', category: 'vegetables', stock: 100, discount: 25 },
-      { name: 'Carrot', price: 20, originalPrice: 28, unit: '1 kg', category: 'vegetables', stock: 100, discount: 28 },
-      { name: 'Banana', price: 30, originalPrice: 40, unit: '1 dozen', category: 'fruits', stock: 80, discount: 25 },
-      { name: 'Apple', price: 80, originalPrice: 100, unit: '1 kg', category: 'fruits', stock: 80, discount: 20 },
-      { name: 'Mango', price: 60, originalPrice: 80, unit: '1 kg', category: 'fruits', stock: 80, discount: 25 },
-      { name: 'Milk', price: 25, originalPrice: 28, unit: '500 ml', category: 'dairy', stock: 50, discount: 10 },
-      { name: 'Paneer', price: 60, originalPrice: 70, unit: '200 g', category: 'dairy', stock: 50, discount: 14 },
-      { name: 'Rice', price: 45, originalPrice: 55, unit: '1 kg', category: 'grains', stock: 100, discount: 18 },
+      { name: 'Tomato', price: 25, originalPrice: 35, unit: '1 kg', category: 'vegetables', stock: 100, discount: 28, isActive: true },
+      { name: 'Potato', price: 20, originalPrice: 25, unit: '1 kg', category: 'vegetables', stock: 100, discount: 20, isActive: true },
+      { name: 'Onion', price: 22, originalPrice: 30, unit: '1 kg', category: 'vegetables', stock: 100, discount: 26, isActive: true },
+      { name: 'Milk', price: 25, originalPrice: 28, unit: '500 ml', category: 'dairy', stock: 50, discount: 10, isActive: true },
     ]);
-    res.json({ message: 'Products seeded!', count: 12 });
+    res.json({ message: 'Products seeded!', count: 4 });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// GET all products
+// GET all products (सिर्फ Active प्रोडक्ट्स दिखेंगे)
 router.get('/', async (req, res) => {
   try {
     const { category, search, sort } = req.query;
-    let query = {};
+    let query = { isActive: true }; // यह फ़िल्टर सिर्फ एक्टिव सामान दिखाएगा
     if (category) query.category = category;
     if (search) query.name = { $regex: search, $options: 'i' };
+    
     let products = Product.find(query);
     if (sort === 'price_low') products = products.sort({ price: 1 });
     if (sort === 'price_high') products = products.sort({ price: -1 });
+    
     const result = await products;
     res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET all products for Admin (सब कुछ दिखेगा)
+router.get('/all', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -81,7 +85,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST - new product with image
+// POST - new product
 router.post('/', upload.single('image'), async (req, res) => {
   try {
     let imageUrl = '';
@@ -89,14 +93,14 @@ router.post('/', upload.single('image'), async (req, res) => {
       const result = await uploadToCloudinary(req.file.buffer);
       imageUrl = result.secure_url;
     }
-    const product = await Product.create({ ...req.body, image: imageUrl });
+    const product = await Product.create({ ...req.body, image: imageUrl, isActive: true });
     res.status(201).json(product);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// PUT - update product with image
+// PUT - update product
 router.put('/:id', upload.single('image'), async (req, res) => {
   try {
     let updateData = { ...req.body };
