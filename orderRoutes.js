@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/Order'); 
-const { authenticateToken } = require('../middleware/authMiddleware');
+const Order = require('./config/models/Order'); 
+const { authenticateToken } = require('./middleware/authMiddleware');
 
 // 1. नया ऑर्डर बनाने के लिए
 router.post('/', authenticateToken, async (req, res) => {
@@ -20,15 +20,14 @@ router.post('/', authenticateToken, async (req, res) => {
 // 2. यूजर के अपने ऑर्डर देखने के लिए
 router.get('/my-orders', authenticateToken, async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user.id })
-                                  .sort({ createdAt: -1 });
+        const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
         res.json(orders);
     } catch (err) {
         res.status(500).json({ message: "Error fetching orders", error: err.message });
     }
 });
 
-// 3. ऑर्डर अपडेट करने के लिए
+// 3. ऑर्डर स्टेटस अपडेट करने के लिए
 router.patch('/:id', authenticateToken, async (req, res) => {
     try {
         const updatedOrder = await Order.findByIdAndUpdate(
