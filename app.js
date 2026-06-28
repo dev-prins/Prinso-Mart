@@ -29,6 +29,24 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/payment', paymentRoutes);   // ← Ye important hai
 
+// 👇 YAHAN HUMNE NAYA DUMMY ROUTE ADD KIYA HAI TAAKI FRONTEND CHAL SAKE 👇
+app.post('/orders', async (req, res) => {
+    try {
+        const { amount, currency } = req.body;
+        // अभी के लिए डमी सक्सेस भेज रहे हैं ताकि चेकआउट हो सके
+        res.status(200).json({
+            success: true,
+            id: "order_dummy_" + Date.now(),
+            amount: amount || 500,
+            currency: currency || 'INR'
+        });
+    } catch (error) {
+        console.error("Checkout Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+// 👆 DUMMY ROUTE KHATAM 👆
+
 // Health Check
 app.get('/', (req, res) => {
   res.send('✅ Soni Mart Backend is Running!');
