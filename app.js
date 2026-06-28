@@ -16,23 +16,19 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const settingRoutes = require('./routes/settingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const adminRoutes = require('./routes/adminRoutes'); // नया एडमिन रूट
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/admin', adminRoutes); // एडमिन सिस्टम कनेक्ट हो गया
 
-// DUMMY ROUTE (अब /api/orders के नाम से काम करेगा)
-app.post('/api/orders', async (req, res) => {
-    res.status(200).json({
-        success: true,
-        id: "order_" + Date.now(),
-        amount: 500
-    });
-});
+app.get('/', (req, res) => res.send('✅ Soni Mart API is running perfectly!'));
 
-app.get('/', (req, res) => res.send('✅ Soni Mart API is running!'));
+// Error handling for 404
+app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Soni Mart Server running on port ${PORT}`));
