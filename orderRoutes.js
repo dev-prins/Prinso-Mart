@@ -1,56 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/Order'); // सही पाथ (दो डॉट)
-const { authenticateToken } = require('../middleware/authMiddleware'); // सही पाथ
+const Order = require('../models/Order'); 
+const { authenticateToken } = require('../middleware/authMiddleware');
 
-// 1. GET my orders (सिर्फ लॉगिन यूज़र के लिए)
-router.get('/myorders', authenticateToken, async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user.id }) // req.user.id मिडिलवेयर से आता है
-      .populate('items.product', 'name price')
-      .sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// 2. GET all orders (एडमिन के लिए)
-router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const orders = await Order.find()
-      .populate('user', 'name phone email')
-      .populate('items.product', 'name price')
-      .sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// 3. POST create order
+// 1. नया ऑर्डर बनाने के लिए
 router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const order = await Order.create({ ...req.body, user: req.user.id });
-    res.status(201).json(order);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    try {
+        const newOrder = new Order({
+            ...req.body,
+            user: req.user.id
+        });
+        const savedOrder = await newOrder.save();
+        res.status(201).json(savedOrder);
+    } catch (err) {
+        res.status(500).json({ message: "Order creation failed", error: err.message });
+    }
 });
 
-// 4. PUT update/cancel status
-router.put('/:id', authenticateToken, async (req, res) => {
-  try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { new: true }
-    );
-    if (!order) return res.status(404).json({ message: 'Order not found' });
-    res.json(order);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+// 2. यूजर के अपने ऑर्डर देखने के लिए
+router.get('/my-orders', authenticateToken, async (req, res) => {
+    try {
+        const orders = await Order.find({ user: req.user.id })
+                                  .sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching orders", error: err.message });
+    }
+});
+
+// 3. ऑर्डर अपडेट करने के लिए
+router.patch('/:id', authenticateToken, async (req, res) => {
+    try {
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id, 
+            { status: req.body.status }, 
+            { new: true }
+        );
+        if (!updatedOrder) return res.status(404).json({ message: "Order not found" });
+        res.json(updatedOrder);
+    } catch (err) {
+        res.status(500).json({ message: "Update failed", error: err.message });
+    }
 });
 
 module.exports = router;
