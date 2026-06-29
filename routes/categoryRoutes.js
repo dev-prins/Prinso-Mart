@@ -1,9 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Category = require('./config/models/Category');
+
+const Category = require("../config/models/Category");
 
 // GET all categories
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const categories = await Category.find();
     res.json(categories);
@@ -13,18 +14,22 @@ router.get('/', async (req, res) => {
 });
 
 // GET single category
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     res.json(category);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// POST create category (admin)
-router.post('/', async (req, res) => {
+// Create category
+router.post("/", async (req, res) => {
   try {
     const category = await Category.create(req.body);
     res.status(201).json(category);
@@ -33,26 +38,30 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update category (admin)
-router.put('/:id', async (req, res) => {
+// Update category
+router.put("/:id", async (req, res) => {
   try {
     const category = await Category.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     res.json(category);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// DELETE category (admin)
-router.delete('/:id', async (req, res) => {
+// Delete category
+router.delete("/:id", async (req, res) => {
   try {
     await Category.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Category deleted' });
+    res.json({ message: "Category deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
