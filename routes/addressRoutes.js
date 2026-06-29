@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Address = require('./config/models/Address');
 
-// GET all addresses of a user
+const Address = require('../config/models/Address');
+
+// Get all addresses
 router.get('/', async (req, res) => {
   try {
     const addresses = await Address.find({ user: req.query.userId });
@@ -12,7 +13,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST create address
+// Create address
 router.post('/', async (req, res) => {
   try {
     const address = await Address.create(req.body);
@@ -22,7 +23,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update address
+// Update address
 router.put('/:id', async (req, res) => {
   try {
     const address = await Address.findByIdAndUpdate(
@@ -30,32 +31,50 @@ router.put('/:id', async (req, res) => {
       req.body,
       { new: true }
     );
-    if (!address) return res.status(404).json({ message: 'Address not found' });
+
+    if (!address) {
+      return res.status(404).json({ message: 'Address not found' });
+    }
+
     res.json(address);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// DELETE address
+// Delete address
 router.delete('/:id', async (req, res) => {
   try {
-    await Address.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Address deleted' });
+    const address = await Address.findByIdAndDelete(req.params.id);
+
+    if (!address) {
+      return res.status(404).json({ message: 'Address not found' });
+    }
+
+    res.json({ message: 'Address deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// PUT set default address
+// Set default address
 router.put('/:id/default', async (req, res) => {
   try {
-    await Address.updateMany({ user: req.body.userId }, { isDefault: false });
+    await Address.updateMany(
+      { user: req.body.userId },
+      { isDefault: false }
+    );
+
     const address = await Address.findByIdAndUpdate(
       req.params.id,
       { isDefault: true },
       { new: true }
     );
+
+    if (!address) {
+      return res.status(404).json({ message: 'Address not found' });
+    }
+
     res.json(address);
   } catch (err) {
     res.status(500).json({ message: err.message });
