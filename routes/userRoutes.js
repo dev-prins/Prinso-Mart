@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const User = require('./config/models/userModel');
 
-// GET all users (admin)
+const User = require('../config/models/userModel');
+
+// GET all users
 router.get('/', async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -16,14 +17,18 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// PUT update user
+// UPDATE user
 router.put('/:id', async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
@@ -31,18 +36,27 @@ router.put('/:id', async (req, res) => {
       req.body,
       { new: true }
     ).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// DELETE user (admin)
+// DELETE user
 router.delete('/:id', async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: 'User deleted' });
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -51,7 +65,10 @@ router.delete('/:id', async (req, res) => {
 // GET delivery partners
 router.get('/role/delivery', async (req, res) => {
   try {
-    const partners = await User.find({ role: 'delivery_partner' }).select('-password');
+    const partners = await User.find({
+      role: 'delivery_partner'
+    }).select('-password');
+
     res.json(partners);
   } catch (err) {
     res.status(500).json({ message: err.message });
