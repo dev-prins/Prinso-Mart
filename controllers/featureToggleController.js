@@ -1,15 +1,25 @@
-const FeatureToggle = require("../models/FeatureToggle");
+const FeatureToggle = require("../config/models/FeatureToggle");
 
-// Get settings
+// Get feature settings
 const getFeatureToggle = async (req, res) => {
   try {
     let settings = await FeatureToggle.findOne();
 
     if (!settings) {
-      settings = await FeatureToggle.create({});
+      settings = await FeatureToggle.create({
+        home: true,
+        categories: true,
+        search: true,
+        cart: true,
+        wishlist: true,
+        offers: true,
+        delivery: true,
+        wallet: false,
+        referral: false,
+      });
     }
 
-    res.json(settings);
+    res.status(200).json(settings);
   } catch (err) {
     res.status(500).json({
       message: err.message,
@@ -17,7 +27,7 @@ const getFeatureToggle = async (req, res) => {
   }
 };
 
-// Update settings
+// Update feature settings
 const updateFeatureToggle = async (req, res) => {
   try {
     let settings = await FeatureToggle.findOne();
@@ -29,7 +39,7 @@ const updateFeatureToggle = async (req, res) => {
       await settings.save();
     }
 
-    res.json(settings);
+    res.status(200).json(settings);
   } catch (err) {
     res.status(500).json({
       message: err.message,
