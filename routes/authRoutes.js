@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../config/models/userModel");
@@ -10,10 +9,18 @@ router.post("/register", async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, Email and Password are required",
+      });
+    }
+
     const userExists = await User.findOne({ email });
 
     if (userExists) {
       return res.status(400).json({
+        success: false,
         message: "User already exists",
       });
     }
@@ -37,16 +44,22 @@ router.post("/register", async (req, res) => {
     );
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
+      success: true,
+      message: "Registration Successful",
       token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
     });
-  } catch (error) {
+
+  } catch (err) {
     res.status(500).json({
-      message: error.message,
+      success: false,
+      message: err.message,
     });
   }
 });
@@ -56,11 +69,19 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(401).json({
-        message: "Invalid email or password",
+        success: false,
+        message: "Invalid Email or Password",
       });
     }
 
@@ -68,7 +89,8 @@ router.post("/login", async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({
-        message: "Invalid email or password",
+        success: false,
+        message: "Invalid Email or Password",
       });
     }
 
@@ -83,17 +105,23 @@ router.post("/login", async (req, res) => {
       }
     );
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
+    res.status(200).json({
+      success: true,
+      message: "Login Successful",
       token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
     });
-  } catch (error) {
+
+  } catch (err) {
     res.status(500).json({
-      message: error.message,
+      success: false,
+      message: err.message,
     });
   }
 });
