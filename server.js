@@ -3,22 +3,18 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const morgan = require("morgan");
 
+dotenv.config();
+
 const connectDB = require("./config/db");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-dotenv.config();
-
-// Connect Database
+// Connect MongoDB
 connectDB();
 
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: "*",
-  credentials: true,
-}));
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,19 +22,20 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Test Route
+// Home Route
 app.get("/", (req, res) => {
   res.send("✅ Soni Mart API is running perfectly!");
 });
 
+// Test Route
 app.get("/api/test", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    message: "API Working Successfully"
+    message: "API Working Successfully",
   });
 });
 
-// Routes
+// API Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
@@ -50,10 +47,10 @@ app.use("/api/settings", require("./routes/settingRoutes"));
 app.use("/api/features", require("./routes/featureToggleRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
-// 404 Handler
+// 404 Middleware
 app.use(notFound);
 
-// Error Handler
+// Error Middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 10000;
