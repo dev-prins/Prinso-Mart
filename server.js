@@ -7,50 +7,56 @@ const connectDB = require("./config/db");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 dotenv.config();
+
+// Connect Database
 connectDB();
 
 const app = express();
 
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: "*",
+  credentials: true,
+}));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Routes
-const authRoutes = require("./routes/authRoutes");
-const productRoutes = require("./routes/productRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const userRoutes = require("./routes/userRoutes");
-const addressRoutes = require("./routes/addressRoutes");
-const serviceAreaRoutes = require("./routes/serviceAreaRoutes");
-const settingRoutes = require("./routes/settingRoutes");
-const featureToggleRoutes = require("./routes/featureToggleRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-
+// Test Route
 app.get("/", (req, res) => {
-  res.send("PrinsoMart API Running...");
+  res.send("✅ Soni Mart API is running perfectly!");
 });
 
-// API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/addresses", addressRoutes);
-app.use("/api/serviceareas", serviceAreaRoutes);
-app.use("/api/settings", settingRoutes);
-app.use("/api/features", featureToggleRoutes);
-app.use("/api/admin", adminRoutes);
+app.get("/api/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "API Working Successfully"
+  });
+});
 
-// Error Middleware
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/categories", require("./routes/categoryRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/addresses", require("./routes/addressRoutes"));
+app.use("/api/serviceareas", require("./routes/serviceAreaRoutes"));
+app.use("/api/settings", require("./routes/settingRoutes"));
+app.use("/api/features", require("./routes/featureToggleRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+
+// 404 Handler
 app.use(notFound);
+
+// Error Handler
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
